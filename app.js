@@ -5,7 +5,10 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const Thing = require('./models/thing');
+//const Thing = require('./models/thing');
+const userRoutes = require('./routes/user');
+const stuffRoutes = require('./routes/stuff');
+const path = require('path');
 
 const app = express();
 
@@ -25,7 +28,16 @@ app.use((req, res, next) => {
   next();
 });
 
+//parse request body into a json object
 app.use(bodyParser.json());
+
+//allow access to the images folder/static resource
+//Using the built-in  path  package and Express'  static  method,
+// we can serve up static resources such as images
+app.use('/images', express.static(path.join(__dirname, 'images')));
+
+app.use('/api/stuff', stuffRoutes);
+app.use('/api/auth', userRoutes);
 
 /*app.post('/api/stuff', (req, res, next) => {
   console.log(req.body);
@@ -34,7 +46,7 @@ app.use(bodyParser.json());
   });
 });*/
 
-app.post('/api/stuff', (req, res, next) => {
+/*app.post('/api/stuff', (req, res, next) => {
   const thing = new Thing({
     title: req.body.title,
     description: req.body.description,
@@ -97,12 +109,10 @@ app.put('/api/stuff/:id', (req, res, next) => {
   );
 });
 
-app.delete('/api/stuff/:id', (req, res, next) => {
-  Thing.deleteOne({_id: req.params.id}).then(
-    () => {
-      res.status(200).json({
-        message: 'Deleted!'
-      });
+app.use('/api/stuff', (req, res, next) => {
+  Thing.find().then(
+    (things) => {
+      res.status(200).json(things);
     }
   ).catch(
     (error) => {
@@ -111,7 +121,7 @@ app.delete('/api/stuff/:id', (req, res, next) => {
       });
     }
   );
-});
+});*/
 
 /*app.use('/api/stuff', (req, res, next) => {
   const stuff = [
@@ -135,18 +145,6 @@ app.delete('/api/stuff/:id', (req, res, next) => {
   res.status(200).json(stuff);
 });*/
 
-app.use('/api/stuff', (req, res, next) => {
-  Thing.find().then(
-    (things) => {
-      res.status(200).json(things);
-    }
-  ).catch(
-    (error) => {
-      res.status(400).json({
-        error: error
-      });
-    }
-  );
-});
+
 
 module.exports = app;
